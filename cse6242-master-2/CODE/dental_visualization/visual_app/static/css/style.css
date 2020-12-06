@@ -1,0 +1,151 @@
+    html, body {
+    padding: 0;
+    margin: 0;
+    }
+
+    body {
+    display: flex;
+    justify-content: center;
+    font-family: 'Arial';
+    }
+
+    #main {
+    width: 1200px;
+    display: flex;
+    padding-top: 1rem;
+    padding-left: 2rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    }
+
+    .counties {
+    fill: none;
+    }
+
+    .states {
+    fill: none;
+    stroke: #fff;
+    stroke-linejoin: round;
+    }
+
+    div.tooltip {
+    position: absolute;
+    padding: 10px;                
+    font: 14px Arial;        
+    background: rgba(255, 255, 204, 0.9);
+    box-shadow: 1px 1px 10px rgba(128, 128, 128, 0.6);
+    border: 0px;        
+    border-radius: 2px;            
+    pointer-events: none;            
+    }
+
+    #title {
+    font-size: 3.5rem;
+    }
+
+    #description {
+    text-align: center;
+    }
+
+    #source {
+    align-self: flex-end;
+    margin-top: 1rem;
+    }
+
+    a {
+    text-decoration: none;
+    }
+    
+    .selectdiv {
+    position: relative;
+    /*Don't really need this just for demo styling*/
+    float: left;
+    min-width: 200px;
+    margin: 0px 0%;
+    }
+
+    /* IE11 hide native button (thanks Matt!) */
+    select::-ms-expand {
+    display: none;
+    }
+
+    .selectdiv:after {
+    content: '<>';
+    font: 17px "Consolas", monospace;
+    color: #333;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+    right: 11px;
+    /*Adjust for position however you want*/
+    
+    top: 12px;
+    padding: 0 0 4px;
+    border-bottom: 1px solid #999;
+    /*left line */
+    
+    position: absolute;
+    pointer-events: none;
+    }
+
+    .selectdiv select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Add some styling */
+    
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: 40px;
+    float: right;
+    margin: 5px 0px;
+    padding: 0px 24px;
+    font-size: 16px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border: 1px solid #cccccc;
+    -ms-word-break: normal;
+    word-break: normal;
+    }
+
+    .layer-toggles {
+        overflow: hidden;
+        display: -ms-flexbox;
+        display: flex;
+        max-width: 500px;
+        position: absolute;
+        margin: auto;
+        width: 50%;
+        padding: 0px;
+        text-align: center;
+        align-items: center;
+        /* left: 18%; */
+        /* transform: translateX(-50%); */
+    }
+
+    .toggle-button[pressed = "true"] {
+        font-weight: bold;
+        background-color: white;
+    }
+    .toggle-button:first-child {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+    .toggle-button {
+        background-color: #efefef;
+        padding: 6px 12px;
+        font-size: 14px;
+        width: 110px;
+        border: 1px solid #e2e2e2;
+        display: inline;
+        -ms-flex: 1;
+        flex: 1;
+        outline: none;
+        color: #444;
+        border-right: none;
+    }

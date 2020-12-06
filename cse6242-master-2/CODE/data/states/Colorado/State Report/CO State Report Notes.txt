@@ -1,0 +1,15 @@
+Author: Tina Lu
+Last Updated: 07/30/2020
+
+CO State Report Notes
+
+pre-FTE files with census tract and county data
+	CO_Med_RUCA.csv
+	CO_CHIP_RUCA.csv
+	CO_BOD_RUCA.csv
+
+Used BOD_Formatted_Name for Medicaid and CHIP 
+
+
+‘’’Hygienist Map’’’
+3831 rows have active, in-state, and complete addresses of 9471 rows in original hygienist BOD file

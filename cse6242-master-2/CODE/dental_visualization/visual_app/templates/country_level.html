@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <div id='main'>
+        <h1 id='title'>Shortages of Dentists per County in the US</h1>
+        <p>Welcome to the Dental Shortage Portal! Click on a state for more information about the particular state. You may view dental shortage areas across the country here. We created a Dental Availability Index (DAI) to determine if a county is a shortage area or not. 
+            Any county with a DAI less than 0.5 is a shortage area, but there are levels of severity. You can also view the distribution of dentists per county in a heatmap.</p>
+        <div class='layer-view'>
+            <div><input type="radio" name="view_type" value='total' checked><strong>Total Dentists</strong></div>
+            <div><input type="radio" name="view_type" value='shortage'><strong>Shortage Areas</strong></div>
+        </div>
+        <div class="layer-toggles" id='filter_buttons'>
+            <h4 id='filter_label'>Filter By Public Insurance Type</p>
+            <button class="toggle-button" pressed="false" key="chip">CHIP</button>
+            <button class="toggle-button" pressed="false" key="medicaid">Medicaid</button>
+        </div>
+        
+        <br>
+        <svg width="960" height="700"></svg>
+    </div>
+    <div>
+
+    </div>
+    <link rel="stylesheet" href="../static/css/style.css"> </link>
+</head>
+<body>
+<style>
+    #main {
+    width: 1200px;
+    display: flex;
+    padding-top: 1rem;
+    padding-left: 15rem;
+    padding-right: 2rem;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    margin: auto;
+    }
+
+    .radio {
+        padding-left: 10px;
+    }
+    .layer-view {
+        text-align: center;
+        line-height: 0px;
+        font-family: 'Work Sans', sans-serif;
+        overflow: hidden;
+        display: -ms-flexbox;
+        display: flex;
+        max-width: 500px;
+        position: relative;
+        margin: auto;
+        width: 50%;
+        top: 0%;
+        left: 4%;
+        padding: 2px;
+    }
+
+    .layer-toggles {
+        overflow: hidden;
+        display: -ms-flexbox;
+        display: flex;
+        max-width: 500px;
+        position: relative;
+        margin: auto;
+        width: 50%;
+        padding: 0px;
+        text-align: center;
+        align-items: center;
+        top: 0%;
+        right: 1%;
+    }
+    .tooltip {
+            background-color: black;
+            line-height: 0px;
+            border: "solid";
+            border-width: 2px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 16px;
+            border-color: black;
+            border: 2px;
+            text-align: left;
+            color: white;
+            display: -ms-flexbox;
+            display: flex;
+            z-index: 100;
+        }
+    #title {
+        font-size: 36px;
+        font-family: 'Work Sans', sans-serif;
+        padding-bottom: 0;
+    }
+    h3 {
+        line-height: 1;
+        font-size: 20px;
+        font-family: 'Work Sans', sans-serif;
+    }
+    p {
+        font-size: 16px;
+        line-height: 1.2;
+    }
+    .toggle-button {
+        font-family: 'Work Sans', sans-serif;
+        width: 200px;
+    }
+    body {
+        font-family: 'Work Sans', sans-serif;
+    }
+</style>
+<script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://d3js.org/topojson.v3.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>         
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script type="text/javascript" src="../lib/d3-legend.min.js"></script>
+<script type="text/javascript">
+
+function round(x, p = 0){
+    return Math.round(x * (10**p) ) / (10**p)
+}
+
+function binning(x){
+    if (x < 0.25){return 'rgb(227, 50, 23)'}
+        else if (x < 0.375) { return 'rgb(227, 159, 23)'}
+        else if (x < 0.5) { return 'rgb(220, 227, 23)'}
+        return 'rgb(50, 168, 82)'
+}
+
+// State Code Dictionary
+var state_code = {'Alabama': 1,'Alaska': 2,'Arizona': 4,'Arkansas': 5,'California': 6,'Colorado': 8,'Connecticut': 9,'Delaware': 10,'Florida': 12,
+                    'Georgia': 13,'Hawaii': 15,'Idaho': 16,'Illinois': 17,'Indiana': 18,'Iowa': 19,'Kansas': 20,'Kentucky': 21,'Louisiana': 22, 'Maine': 23,'Maryland': 24,
+                    'Massachusetts': 25,'Michigan': 26,'Minnesota': 27,'Mississippi': 28,'Missouri':29,'Montana': 30,'Nebraska': 31,'Nevada': 32,'New Hampshire': 33,
+                    'New Jersey': 34,'New Mexico': 35,'New York': 36,'North Carolina': 37,'North Dakota': 38,'Ohio': 39,'Oklahoma': 40,'Oregon': 41,'Pennsylvania': 42,
+                    'Rhode Island': 44,'South Carolina': 45,'South Dakota': 46,'Tennessee': 47,'Texas': 48,'Utah': 49,'Vermont': 50,'Virginia': 51,'Washington': 53,
+                    'West Virginia': 54,'Wisconsin': 55,'Wyoming': 56,'American Samoa': 60,'Guam': 66,'Northern Mariana Islands': 69,'Puerto Rico': 72}
+// Function to get State from FIPS
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
+    }
+// Define body
+var body = d3.select("body");
+
+var height = window.innerHeight,
+        width = window.innerWidth;
+
+var h = window.innerHeight-200;
+// Define the div for the tooltip
+var Tooltip = body.append("div")
+  .attr("class", "tooltip")
+  .attr("id", "tooltip")
+  .style('background-color', 'black')
+  .style("opacity", 0);
+
+
+var path = d3.geoPath().projection(d3.geoAlbersUsa().scale(1300).translate([487.5, 305]));
+
+var county_summaries = d3.dsv(",", '../master_county_data.csv', function (d) {
+        return {
+            STATE_FIPS: +d.State_ID,
+            COUNTY_FIPS: +d.COUNTY_FIPS,
+            ACCEPTS_MED: parseFloat(d.ACCEPTS_MED),
+            ACCEPTS_CHIP: parseFloat(d.ACCEPTS_CHIP),
+            ACCEPTS_MED_CHIP: parseFloat(d.ACCEPTS_MED_CHIP),
+            NUM_DENTISTS: parseFloat(d.NUM_DENTISTS),
+            PUBLIC_AVAILABILITY_RATIO: round(parseFloat(d.PUBLIC_AVAILABILITY_RATIO), 3),
+            CHILDREN_POP: +d.p_i
+        };})
+
+const us_counties = d3.json('../All_States/counties-10m.json')
+
+Promise.all([county_summaries, us_counties]).then(function(values){
+    county_summaries = values[0]
+    us = values[1]
+    console.log(county_summaries)
+    create_legend_heatmap(county_summaries)
+    create_heatmap(us, county_summaries, "NUM_DENTISTS")
+
+    // add the options to the radio buttons
+    var radio_buttons = d3.selectAll(".layer-view")
+    .selectAll('input')
+    .on("click", function(){
+        view_type = this.value
+        if (view_type === 'shortage')
+        {
+            d3.select("#legend_svg").remove();
+            $("#filter_buttons").hide();
+            create_legend_shortage(county_summaries)
+            create_heatmap(us, county_summaries, "PUBLIC_AVAILABILITY_RATIO")
+            $("input[name='view_type'][value='shortage]'").prop('checked', true);
+            $("input[name='view_type'][value='total]").prop('checked', false);
+        }
+        else
+        {
+            d3.select("#legend_svg").remove();
+            $("#filter_buttons").show();
+            create_legend_heatmap(county_summaries)
+            create_heatmap(us, county_summaries, "NUM_DENTISTS")
+            $("input[name='view_type'][value='total]").prop('checked', true);
+            $("input[name='view_type'][value='shortage]").prop('checked', false);
+        }
+    });
+
+
+    // add the options to the insurance filtering buttons
+    var select_buttons = d3.selectAll(".layer-toggles")
+    .selectAll(".toggle-button")
+    .on("click", function() {
+        if (d3.select(this).attr("pressed") === "true")
+        {
+            d3.select(this).attr("pressed", false)
+        }
+        else
+        {
+            d3.select(this).attr("pressed", true)
+        }
+        // See which buttons are pushed to filter data
+        var all_buttons = d3.selectAll(".toggle-button")._groups[0]
+        var pressed = Array.from(all_buttons).filter(button => button.attributes.pressed.value === "true")
+        if (pressed.length === 0)
+        {
+            create_heatmap(us, county_summaries, "NUM_DENTISTS")
+        }
+        else if (pressed.length === 2)
+        {
+            create_heatmap(us, county_summaries, "ACCEPTS_MED_CHIP")
+        }
+        else
+        {
+            if (pressed[0].attributes.key.value === "chip")
+            {
+                create_heatmap(us, county_summaries, "ACCEPTS_CHIP")
+            }
+            else
+            {
+                create_heatmap(us, county_summaries, "ACCEPTS_MED")
+            }
+        }
+    })
+})
+
+
+function create_legend_heatmap(county_summaries)
+{
+    /* Create Color Legend */
+    var color_seq = d3.scaleSequential(d3.interpolateReds)
+        .domain([
+            d3.min(county_summaries, function(d) {return d.NUM_DENTISTS}),
+            d3.max(county_summaries, function(d) {return d.NUM_DENTISTS})]);
+    var x1 = d3.scaleLinear()
+        .domain([
+            d3.min(county_summaries, function(d) {return d.NUM_DENTISTS}),
+            d3.max(county_summaries, function(d) {return d.NUM_DENTISTS})])         
+        .range([0, height/3]) 
+        
+    
+    var svg_legend = d3.select("body")
+        .append("svg")
+        .attr("transform", "translate(0, 300)")
+        .attr('id', 'legend_svg')
+    // This is still the scale stuff
+    var defs = svg_legend.append("defs");
+    var linearGradient = defs.append("linearGradient")
+        .attr("id", "linear-gradient");
+
+    linearGradient
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+
+    for (i = 0; i < 20; i++){
+            var col = d3.interpolateReds(i/20)
+            linearGradient.append("stop")
+                .attr("offset", i*5 + "%")
+                .attr("stop-color", col); //light blue
+        }
+
+    svg_legend.append("rect")
+        .attr("width", 20)
+        .attr("height", height/3)
+        .attr("transform", "translate(60," + h/4 + ")") 
+        .style("fill", "url(#linear-gradient)");
+
+    svg_legend.append("text")
+        .attr('id', 'legend_label')
+        .attr("text-anchor", "middle")
+        .attr("y", h/4- 15)
+        .attr("x", 65)
+        .text("Total Dentists")
+
+    svg_legend
+        .append("g")
+        .attr("transform", "translate(60," + h/4 + ")") 
+        .call(d3.axisLeft(x1));
+}
+
+function create_heatmap(us, county_summaries, filter_options)
+{
+    /* Create Color Legend */
+    var color_seq = d3.scaleSequential(d3.interpolateReds)
+        .domain([
+            d3.min(county_summaries, function(d) {return d.NUM_DENTISTS}),
+            d3.max(county_summaries, function(d) {return d.NUM_DENTISTS})]);
+
+    var svg = d3.select("svg")
+    /* Create Heatmap */
+    svg.append("g")
+        .attr("class", "counties")
+        .selectAll("path")
+        .data(topojson.feature(us, us.objects.counties).features)
+        .enter().append("path")
+        .attr("class", "county")
+        .attr("data-fips", function(d) {
+            return d.id
+        })
+        .attr("d", path)
+        .on("mouseover", function(d) {  
+            document.body.style.cursor = "pointer";    
+            Tooltip.style("opacity", .8); 
+            Tooltip.html(function() {
+            var result = county_summaries.filter(function( obj ) {
+                // Put state and county code together
+                fips = obj.STATE_FIPS * 1000 + obj.COUNTY_FIPS
+
+                if (fips == d.id)
+                {
+                    obj.county_name = d.properties.name
+                    return fips == d.id
+                }
+            });
+            if(result[0]){
+                if (filter_options !== 'PUBLIC_AVAILABILITY_RATIO')
+                {
+                    return '<b><span style="line-height:2"><strong><p>' 
+                    + result[0].county_name + ' County, ' + getKeyByValue(state_code, result[0].STATE_FIPS) + '</strong>' 
+                    + '</span></b> <br>Children Population: ' + result[0].CHILDREN_POP
+                    +  '</span></b>' + '<br>Number of Dentists: ' + Math.round(result[0][filter_options])
+                }
+                else 
+                {
+                    return '<b><span style="line-height:2"><strong><p>' + result[0].county_name + ' County, ' + getKeyByValue(state_code, result[0].STATE_FIPS) + '</strong>'
+                    + '</span></b> <br>Children Population: ' + result[0].CHILDREN_POP
+                    + '</span></b>' + '<br>DAI: ' + result[0][filter_options]
+                }
+
+            }
+            //could not find a matching fips id in the data
+            return 0
+            })
+            .style("left", (d3.event.pageX + 10) + "px") 
+            .style("top", (d3.event.pageY - 28) + "px"); 
+        })
+        .on("click", function(d){
+            console.log(d.id.substring(0, 2))
+            var queryString = "?selected=" + d.id.substring(0, 2); 
+            window.open('../templates/state_level.html' + queryString, '_blank');
+            })
+        .on("mouseout", function(d) { 
+            document.body.style.cursor = "default"; 
+            Tooltip.style("opacity", 0); 
+        })
+        .attr("fill", function(d) {
+            var result = county_summaries.filter(function( obj ) {
+                // Put state and county code together
+                fips = obj.STATE_FIPS * 1000 + obj.COUNTY_FIPS
+                return fips == d.id;
+            })
+                if (result[0]) {
+                    if(filter_options !== "PUBLIC_AVAILABILITY_RATIO")
+                    {
+                        return color_seq(result[0][filter_options])
+                    }
+                    else
+                    {
+                        return binning(result[0][filter_options])
+                    }
+                }  
+                else {return "#f3f3f3"}
+            })
+
+    svg.append("path")
+        .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+        .attr("class", "states")
+        .attr("d", path);
+}
+
+function create_legend_shortage(county_summaries) {
+    var svg_legend = d3.select("body")
+        .append("svg")
+        .attr("transform", "translate(0, 300)")
+        .attr('id', 'legend_svg')
+
+    svg_legend.selectAll("mydots")
+        .data([ 'rgb(227, 50, 23)', 'rgb(227, 159, 23)','rgb(220, 227, 23)', 'rgb(50, 168, 82)' ])
+        .enter()
+        .append("circle")
+            .attr("cx", '5%')
+            .attr("cy", function(d,i){ return h/3.45 + i*18})
+            .attr("r", 4)
+            .style("fill", function(d){   return d  })
+
+    // Add one dot in the legend for each name.
+    svg_legend.selectAll("mylabels")
+        .data(['Very High Shortage:\n 0 < 0.25', 'Medium Shortage: 0.25 < 0.375', 'Low Shortage: 0.375 < 0.5', 'No Shortage: 0.5 < 1.0'])
+        .enter()
+        .append("text")
+        .attr("x", '8%')
+        .attr("y", function(d,i){ return h/3.37 + i*18})
+        .text(function(d){ return d})
+        .style("alignment-baseline", "middle")
+        .style('font-size', "14px")
+        .style('font-family', 'Work Sans, sans-serif')
+
+    // Add one dot in the legend for each name.
+    svg_legend.selectAll("mylabels")
+        .data(['Shortage Areas'])
+        .enter()
+        .append("text")
+        .attr("x", '2%')
+        .attr("y", function(d,i){ return h/4 + i*18})
+        .text(function(d){ return d})
+        .style("alignment-baseline", "middle")
+        .style('font-size', "16px")
+        .style('font-family', 'Work Sans, sans-serif')
+}
+
+</script>
+
+</body>
+</html>

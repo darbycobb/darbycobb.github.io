@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet"> 
+    <title>State map</title>
+
+    <div class = 'header'>
+        <h1 style = 'font-size: 30px'>State Maps</h1>
+
+        <div id = 'county'>
+            <INPUT TYPE="Radio" Name="State" Value="County" id = 'County' checked>County
+            <!-- <INPUT TYPE="Radio" Name="State" Value="Census" id = 'Census'>Census Tracts<br><br> -->
+            <INPUT TYPE="Radio" Name="State" Value="Cluster" id = 'Census'>Cluster<br><br>
+        </div>
+
+        <select id="selectButton"></select>
+    </div>
+    <div id="container" class="svg-container">
+        <div id = 'input_radio'>
+            <!-- <p>Heatmap</p> -->
+            <input type="radio" id="male" name="gender" value="Log" checked>
+            <label for="male">Log Scale</label><br>
+            <input type="radio" id="female" name="gender" value="Linear">
+            <label for="female">Linear Scale</label><br>
+        </div>
+    </div>
+    <div id = 'checkbox'>
+        <!-- <select id="insurance_dropdown"></select> -->
+        <h4 style= 'display: inline;'>Filter by Insurance Type:</h4>&emsp;
+        <select id="insurance_dropdown">
+            <option value="medicaid">Medicaid</option>
+            <option value="chip">CHIP</option>
+            <option value="medicaid_chip">Medicaid + CHIP</option>
+        </select>
+    </div>
+    <div id = 'options'>
+        <input type="radio" id="Total" name="total_capita" value="Total" checked>
+        <label for="Total">Total Dentists</label>
+        <input type="radio" id="Capita" name="total_capita" value="Capita">
+        <label for="Capita">Dentists Per 100,000</label><br>
+    </div>
+    <div id = 'text1'>
+        <!-- <h3>400 Dentists Accept Medicaid</h3> -->
+    </div>
+    <div id = 'text2'></div>
+    <div id = 'text3'></div>
+    <div id = 'pie'></div>
+    <div id = 'bar'>
+        <h4>Number of Dentists by Rurality, Provider Type</h4>
+    </div>
+
+    <br>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+
+        .header {
+            text-align: center;
+            width: 50%;
+            font-family: 'Work Sans', sans-serif;
+            line-height: 80%;
+            padding-top: 0.1%;
+
+        }
+        .tooltip {
+            background-color: black;
+            line-height: 0px;
+            border: "solid";
+            border-width: 2px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 16px;
+            border-color: white;
+            border: 2px;
+            text-align: left; 
+            color: white;
+        }
+
+        #selectButton {
+            width: 250px;
+        }
+
+        #checkbox {
+            position: absolute;
+            text-align: center;
+            font-family: 'Work Sans', sans-serif;
+            top: 5%;
+            right: 3%;
+            width: 43%;
+            height: 5%;
+            /* border: 3px solid #73AD21; */
+            display: inline-block;
+        }
+
+        #checkbox select{
+            width: 34%;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        #text1 {
+            text-align: center;
+            line-height: 0px;
+            font-family: 'Work Sans', sans-serif;
+            /* display:block; */
+            line-height: 40%;
+            font-size: 16px;
+            font-weight: bold;
+            position: absolute;
+            top: 20%;
+            right: 30%;
+            width: 22%;
+            height: 27%;
+            /* border: 3px solid #73AD21; */
+        }
+
+        #text2 {
+            text-align: center;
+            line-height: 40%;
+            font-family: 'Work Sans', sans-serif;
+            /* display:block; */
+            font-size: 16px;
+            position: absolute;
+            top: 20%;
+            right: 16%;
+            width: 6%;
+            height: 27%;
+            /* border: 3px solid #73AD21; */
+        }
+
+        #text3 {
+            text-align: center;
+            line-height: 40%;
+            font-family: 'Work Sans', sans-serif;
+            /* display:block; */
+            font-size: 16px;
+            position: absolute;
+            top: 20%;
+            right: 24%;
+            width: 6%;
+            height: 27%;
+            /* border: 3px solid #73AD21; */
+        }
+
+        #options {
+            text-align: center;
+            line-height: 0px;
+            font-family: 'Work Sans', sans-serif;
+            display:block;
+            position: absolute;
+            top: 11%;
+            right: 3%;
+            width: 43%;
+            height: 5%;
+            /* border: 3px solid #73AD21; */
+        }
+
+        #pie {
+            text-align: right;
+            line-height: 0px;
+            font-family: 'Work Sans', sans-serif;
+            display:block;
+            position: absolute;
+            top: 16%;
+            right: 1%;
+            width: 25%;
+            height: 38%;
+            /*border: 3px solid #73AD21;*/
+        }
+
+        #bar {
+            text-align: center;
+            font-family: 'Work Sans', sans-serif;
+            line-height: 0px;
+            display:block;
+            position: absolute;
+            top: 48%;
+            right: 3%;
+            width: 43%;
+            height: 48%;
+            /* border: 3px solsid #73AD21; */
+        }
+
+        .footer{
+            text-align: center;
+            font-family: 'Work Sans', sans-serif;
+            display:block;
+            position: absolute;
+            top: 92%;
+            /* right: 55%; */
+            width: 50%;
+            height: 5%;
+            /* border: 3px solid #73AD21; */
+        }
+
+        #legend_label {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        #input_radio {
+            /* text-align: center; */
+            font-family: 'Work Sans', sans-serif;
+            display:block;
+            position: absolute;
+            top: 74%;
+            left: 30px;
+            width: 100px;
+            height: 5%;
+            /* border: 3px solid #73AD21; */
+            font-family: 'Work Sans', sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        .btn {
+            background-color: rgb(128,128,128);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+            /* Darker background on mouse-over */
+        .btn:hover {
+            background-color: rgb(80, 80, 80);
+        }
+
+    </style>
+
+</head>
+
+<body>
+    
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>         
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script type="text/javascript" src="../lib/d3-legend.min.js"></script>
+
+    <script type="text/javascript">
+    
+    // Function to get State from FIPS
+    function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
+    }
+
+    // State Code Dictionary
+    var state_code = {'Alabama': '01','Alaska': '02','Arizona': '04','Arkansas': '05','California': '06','Colorado': '08','Connecticut': '09','Delaware': '10','Florida': '12',
+                    'Georgia': '13','Hawaii': '15','Idaho': '16','Illinois': '17','Indiana': '18','Iowa': '19','Kansas': '20','Kentucky': '21','Louisiana': '22', 'Maine': '23','Maryland': '24',
+                    'Massachusetts': '25','Michigan': '26','Minnesota': '27','Mississippi': '28','Missouri':'29','Montana': '30','Nebraska': '31','Nevada': '32','New Hampshire': '33',
+                    'New Jersey': '34','New Mexico': '35','New York': '36','North Carolina': '37','North Dakota': '38','Ohio': '39','Oklahoma': '40','Oregon': '41','Pennsylvania': '42',
+                    'Rhode Island': '44','South Carolina': '45','South Dakota': '46','Tennessee': '47','Texas': '48','Utah': '49','Vermont': '50','Virginia': '51','Washington': '53',
+                    'West Virginia': '54','Wisconsin': '55','Wyoming': '56','American Samoa': '60','Guam': '66','Northern Mariana Islands': '69','Puerto Rico': '72'}
+    
+
+    var height = window.innerHeight,
+        width = window.innerWidth
+
+    // Default values for our variables
+    var level = 'county',
+        it = 'medicaid',
+        stype = 'Log',
+        total_capita = 'Total'
+
+
+
+    projections = { '01' : [-86.66,32.7, 5000],
+                    '02' : [-146.6, 63.9, 700],
+                    '04' : [-111.520,34.536, 3500],
+                    '05' : [-92.17, 34.5, 6000],
+                    '06' : [-118, 37.32, 2200],
+                    '08' : [-105.5,39.5, 5000],
+                    '09' : [-72.61,41.61, 18000],
+                    '10' : [-75.5,39.1, 17000],
+                    '12' : [-83.37, 27.75, 4000],
+                    '13' : [-82.8, 32.8, 5500],
+                    '15' : [-157, 20, 4000],
+                    '16' : [-113.7,45.4, 3000],
+                    '17' : [-89.1,39.9, 4500],
+                    '18' : [-86.1,39.75, 5500],
+                    '19' : [-93.1,42, 5000],
+                    '20' : [-97.95,38.5, 4500],
+                    '21' : [-85.47,37.6, 4500],
+                    '22' : [-91.7,31.26, 5500],
+                    '23' : [-68.7 ,45.13, 4500],
+                    '24' : [-77.2,39, 8000],
+                    '25' : [-71.65, 42.08, 10000],
+                    '26' : [-85.15, 44.8, 3000],
+                    '27' : [-93.7, 46.4, 3400],
+                    '28' : d3.geoMercator().center([-88.6, 33.3]).scale(5500),
+                    '29' : d3.geoMercator().center([-92, 39]).scale(5000),
+                    '30' : d3.geoMercator().center([-111, 47]).scale(3500),
+                    '31' : d3.geoMercator().center([-100, 41.5]).scale(5000),
+                    '32' : d3.geoMercator().center([-115.5, 40]).scale(3500),
+                    '33' : d3.geoMercator().center([-71, 44.3]).scale(7500),
+                    '34' : d3.geoMercator().center([-74.5, 40.5]).scale(10000),
+                    '35' : d3.geoMercator().center([-105, 35]).scale(4000),
+                    '36' : d3.geoMercator().center([-75.5, 43.5]).scale(4500),
+                    '37' : d3.geoMercator().center([-81, 35.5]).scale(4500),
+                    '38' : d3.geoMercator().center([-100.5, 47.7]).scale(5000),
+                    '39' : d3.geoMercator().center([-82.4, 40.8]).scale(6000),
+                    '40' : d3.geoMercator().center([-98.5,35.7]).scale(4800),
+                    '41' : d3.geoMercator().center([-120.5,44.5]).scale(4500),
+                    '42' : d3.geoMercator().center([-79,41.2]).scale(7200),
+                    '44' : d3.geoMercator().center([-71.4,41.7]).scale(26000),
+                    '45' : d3.geoMercator().center([-81,34]).scale(7000),
+                    '46' : d3.geoMercator().center([-101,44.5]).scale(5300),
+                    '47' : d3.geoMercator().center([-87,36]).scale(5500),
+                    '48' : d3.geoMercator().center([-100,33]).scale(2500),
+                    '49' : d3.geoMercator().center([-111,40]).scale(4000),
+                    '50' : d3.geoMercator().center([-72,44.2]).scale(9500),
+                    '51' : d3.geoMercator().center([-80,38]).scale(5500),
+                    '53' : d3.geoMercator().center([-122,47.7]).scale(5500),
+                    '54' : d3.geoMercator().center([-80.5,39.4]).scale(6500),
+                    '55' : d3.geoMercator().center([-90,45.4]).scale(5000),
+                    '56' : d3.geoMercator().center([-108,43.5]).scale(4700),
+                    '60' : d3.geoMercator().center([-50, 60]).scale(100),
+
+    }
+
+    state_names = Object.keys(state_code).slice(0,50);
+    // State selected from country level
+    var queryString = decodeURIComponent(window.location.search);
+    queryString = queryString.substring(1); 
+    fips = queryString.substring(queryString.length - 2, queryString.length)
+    // Get State corresponding to fips code
+    selected_state = getKeyByValue(state_code, fips)
+    // console.log("SELECTED STATE", selected_state)
+    if (selected_state)
+    {
+        var selected = selected_state
+    }
+    else
+    {
+        var selected = "Minnesota"
+    }
+
+    // Establishing global variables for later
+    var pie_data, scale_type, s_type, bar_data, svg_text1, svg_text2, svg_text3, svg_text_d1, merged 
+
+    var w = window.innerWidth;
+    var h = window.innerHeight-200;
+
+    var svg_text_d = {
+                'medicaid': 'Medicaid',
+                'chip': 'CHIP',
+                'medicaid_chip': 'Medicaid and CHIP'
+            }
+
+    var Tooltip = d3.select("div#container").append("div").style("opacity", 0).attr("class", "tooltip");
+
+    d3.select("#selectButton")
+        .selectAll('myOptions')
+        .data(state_names)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) 
+        .attr("value", function (d) { return d; })
+        .attr('selected', function(d){ if (d == selected){return selected} })
+
+
+    function summing(data, col){ return d3.sum(data, function(d) {return d[col];})};
+
+    function median(array) {
+                array.sort(function(a, b) {
+                return a - b;
+                });
+                var mid = array.length / 2;
+                var final =  mid % 1 ? array[mid - 0.5] : (array[mid - 1] + array[mid]) / 2;
+                return final
+            }
+
+    function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+    var bar_d = {'medicaid_chip': '', 'medicaid': "Med", "chip": "Chip"}
+
+    function mouseover_county (d){
+
+        var pie_county_data = {
+            General: d['NumGeneral' + bar_d[it]],
+            Pediatric: d['NumPed' + bar_d[it]],
+            Specialty: d['NumSpecialist' + bar_d[it]]
+        }
+
+
+        d3.select('#pie').select('svg').remove()
+        draw_pie(pie_county_data, window.innerHeight, window.innerWidth)
+
+        // // Change summary stats shown on right
+        // console.log(svg_text_d[it])
+        // console.log(d)
+
+        svg_text_d2 = {
+                'medicaid': [ Math.round(d.Medicaid, 2), Math.round(100*d.Medicaid/d.NumDentists, 2) + '%'],
+                'chip': [ Math.round(d.CHIP, 2), Math.round(100*d.CHIP/d.NumDentists, 2) + '%'],
+                'medicaid_chip': [ Math.round(d.MedCHIP, 2), Math.round(100*d.MedCHIP/d.NumDentists, 2) + '%']
+            }
+
+        svg_text2 = 
+                d3.select("div#text2")
+                .html(
+                    '<span style="line-height:150%"><u>Counties</u></span></p><br>' +
+                    d.properties.NAME  + '</p><br>' +
+                    d.CountyPopString +  '</p><br>' +
+                    svg_text_d2[it][0] + '</p><br>' +
+                    svg_text_d2[it][1] + '</p><br>' + 
+                    d.dcai + '</p><br>'
+                    )
+
+    }
+
+    function mousemove_county(d){
+
+        d3.selectAll(".Country")
+            .transition()
+            .duration(50)
+            .style("opacity", .5)
+            .style("stroke-width", '0.8px')
+        d3.select(this)
+            .transition()
+            .duration(50)
+            .style("opacity", 1)
+            .style("stroke-width", '2px')
+            
+        Tooltip
+            .html('<strong><p>County Name: </strong>' + d.properties.NAME + '</p><br>' + 
+            // '<strong><p>County FIPS: </strong>' + d.properties.COUNTY + '</p><br>' + 
+            '<strong><p>Metro Type: </strong>' + d.RuralNum + '</p><br>'
+            // '<strong><p>County Population: </strong>' + d.CountyPopString + '</p><br>' + 
+            // '<strong><p>Number of Dentists: </strong>' + Math.round(d.NumDentists, 2) + '</p><br>'
+            )
+            .style("left", d3.event.pageX + 10 + 'px')
+            .style("top",  d3.event.pageY  + 10 + 'px')
+            // .style('bottom', d3.event.pageY -10 + 'px')
+            .style('padding', 10 + 'px ' + 10 + 'px ' + 10 + 'px ' + 10 + 'px ')
+            .style('border-radius', 4 + 'px')
+            .style('position', 'absolute')
+            .style("opacity", 0.8)
+            .style('z-index', '10')
+        
+
+        }
+
+
+
+
+
+
+
+
+
+    function mouseleave(d) {
+
+        Tooltip
+            .style('opacity', '0')
+            .style('z-index', '-10')
+
+        d3.selectAll(".Country")
+            .transition()
+            .duration(50)
+            .style("opacity", .8)
+            .style('stroke-width', '0.8px')
+        d3.select(this)
+            .transition()
+            .duration(50)
+            .style('opacity', 0.8)
+            .style('stroke-width', '0.8px')
+
+        d3.select('#pie').select('svg').remove()
+        draw_pie(pie_data, window.innerHeight, window.innerWidth)
+
+        svg_text2 = d3.select("div#text2").html('<span style="line-height:150%"><u>Counties</u></span>')
+
+        }
+
+   
+
+
+
+    function draw_barplot(bar_data, h, w){
+    
+    // set the dimensions and margins of the graph
+    var bar_margin = {top: 5, right: w/18, bottom: 50, left: 50},
+        width = w/2.3 - bar_margin.left - bar_margin.right,
+        height = h/2.25 - bar_margin.top - bar_margin.bottom;
+    
+    // append the svg object to the body of the page
+    var svg_bar = d3.select("#bar")
+      .append("svg")
+        .attr("width", width + bar_margin.left + bar_margin.right)
+        .attr("height", height + bar_margin.top + bar_margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + bar_margin.left + "," + bar_margin.top + ")");
+    
+      var subgroups = ['General', 'Pediatric', 'Specialist']
+    
+      // List of groups = species here = value of the first column called group -> I show them on the X axis
+      var groups = d3.map(bar_data, function(d){return(d.group)}).keys()
+    
+      var max_bar_data = bar_data[0]['General']
+
+      // Add X axis
+      var x = d3.scaleBand()
+          .domain(groups)
+          .range([0, width])
+          .padding([0.2])
+
+      svg_bar.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).tickSize(0));
+    
+      // Add Y axis
+      var y = d3.scaleLinear()
+        .domain([0, max_bar_data])
+        .range([ height, 0 ]);
+      svg_bar.append("g")
+        .call(d3.axisLeft(y));
+    
+      // Another scale for subgroup position?
+      var xSubgroup = d3.scaleBand()
+        .domain(subgroups)
+        .range([0, x.bandwidth()])
+        .padding([0.05])
+    
+      // color palette = one color per subgroup
+      var color = d3.scaleOrdinal()
+        .domain(subgroups)
+        .range(d3.schemeSet2)
+    
+      // Show the bars
+      svg_bar.append("g")
+        .selectAll("g")
+        .data(bar_data)
+        .enter()
+        .append("g")
+          .attr("transform", function(d) { return "translate(" + x(d.group) + ",0)"; })
+        .selectAll("rect")
+        .data(function(d) { return subgroups.map(function(key) { return {key: key, value: d[key]}; }); })
+        .enter().append("rect")
+          .attr("x", function(d) { return xSubgroup(d.key); })
+          .attr("y", function(d) { return y(d.value); })
+          .attr("width", xSubgroup.bandwidth())
+          .attr("height", function(d) { return height - y(d.value); })
+          .attr("fill", function(d) { return color(d.key); })
+          .on('mouseover', function(d){
+
+            // console.log(xSubgroup(d.key))
+            // console.log(x(d.group))
+            
+            svg_bar
+            .append('text')
+            .text("Number of Dentists: " + Math.round(d.value))
+            .attr("x", '40%')
+            .attr("y", '95%')
+            // .attr("x", xSubgroup(d.key))
+            // .attr("y", y(d.value) )
+            // .attr("transform", function(d, a) {
+            //     // if (y(d.value)){return "translate(" + [0,y(d.value)] + ")"; }
+            //     return "translate(" + [0,y(1000)] + ")";  })
+            .style('font-family', 'Work Sans, sans-serifs')
+            .style("text-anchor", "middle")
+            .style("font-size", 12)
+            .attr('id', "labels_text")
+
+            })
+        .style('font-family', 'Work Sans, sans-serifs')
+
+        .on("mouseleave", function(d){
+        d3.select("#labels_text").remove()
+        })
+
+
+
+
+
+
+    // Add one dot in the legend for each name.
+    svg_bar.selectAll("mydots")
+    .data(subgroups)
+    .enter()
+    .append("circle")
+        .attr("cx", w/3)
+        .attr("cy", function(d,i){ return 5 + i*18}) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("r", 4)
+        .style("fill", function(d){ 
+            return color(d)})
+
+    // Add one dot in the legend for each name.
+    svg_bar.selectAll("mylabels")
+    .data(subgroups)
+    .enter()
+    .append("text")
+        .attr("x", w/3 + 10)
+        .attr("y", function(d,i){ return 5 + i*18}) // 100 is where the first dot appears. 25 is the distance between dots
+        // .style("fill", function(d){ return color(d)})
+        .text(function(d){ return d})
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+        .style('font-size', "14px")
+
+    
+    
+   }
+
+
+
+
+
+
+
+
+    function draw_pie(pie_data, h, w){
+
+
+        // This is all the pie chart stuff.
+        var height1 = h/4
+        var width1 = w/7
+
+        var margin = 7
+        var radius = Math.min(width1-50, height1) / 2 - margin
+
+        var svg2 = d3.select("#pie")
+            .append("svg")
+            .attr("width", width1 + 100)
+            .attr("height", height1 + 100)
+            .append("g")
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 " + width1 + " " + height1)
+            .attr("transform", "translate(" + (width1 / 2 + 100) + "," + (height1 + 50) / 2 + ")");
+
+       
+        
+        var data = pie_data
+
+        // set the color scale
+        var color = d3.scaleOrdinal()
+        .domain(data)
+        .range(d3.schemeSet2);
+
+        var pie = d3.pie()
+        .value(function(d) {return d.value; })
+        var data_ready = pie(d3.entries(data))
+        // console.log(data_ready)
+        var arcGenerator = d3.arc()
+        .innerRadius(radius/2.5)
+        .outerRadius(radius)
+
+        svg2
+        .selectAll('mySlices')
+        .data(data_ready)
+        .enter()
+        .append('path')
+            .attr('d', arcGenerator)
+            .attr('fill', function(d){ return(color(d.data.key)) })
+            .attr("stroke", "black")
+            .style("stroke-width", "2px")
+            .style("opacity", 0.7)
+
+        svg2
+        .selectAll('mySlices')
+        .data(data_ready)
+        .enter()
+        .append('text')
+        .text(function(d){ 
+            return d.data.key})
+        .attr("transform", function(d, a) { 
+            if (a == 2){
+                var location = arcGenerator.centroid(d) 
+                location[0] -= width1/5
+                location[1] -= width1/7
+                return "translate(" + location + ")";  
+                }
+            else if (a == 1){
+                var location = arcGenerator.centroid(d) 
+                location[0]
+                location[1] -= width1/6
+                return "translate(" + location + ")";  
+                } 
+            else {
+                var location = arcGenerator.centroid(d) 
+                location[0] += width1/5
+                location[1] += width1/5.2
+                return "translate(" + location + ")";
+                }               
+             })
+        .style('font-family','Work Sans, sans-serif')
+        .style("text-anchor", "middle")
+        .style("font-size", 12)
+        .on('mouseover', function(d){
+
+        svg2
+        .append('text')
+        .text(Math.round(d.data.value))
+        .attr("transform", function(d, a) { 
+            return "translate(" + [0,5] + ")";  })
+        .style('font-family', 'Work Sans, sans-serif')
+        .style("text-anchor", "middle")
+        .style("font-size", 14)
+        .attr('id', "labels_text")
+
+        svg2
+        .append('text')
+        .text('Number of Dentists')
+        .attr("transform", function(d, a) { 
+            return "translate(" + [0, height1/1.55] + ")";  })
+        .style('font-family', 'Work Sans, sans-serif')
+        .style("text-anchor", "middle")
+        .style("font-size", 12)
+        // .style("font-style", "italic")
+        .attr('id', "labels_text1")
+
+        })
+        .on("mouseleave", function(d){
+            d3.select("#labels_text").remove()
+            d3.select("#labels_text1").remove()
+        })
+
+
+    }
+
+
+    function convert_county_fips(num){
+        if (String(num).length == 1){return '00'+ String(num)}
+        if (String(num).length == 2){return '0'+ String(num)}
+        return String(num)
+    }
+
+    function convert_state_fips(num){
+        if (String(num).length == 1){return '0'+ String(num)}
+        return String(num)
+    }
+
+    function draw_map(state){
+
+        // console.log(selected)
+        // console.log(stype)
+        // console.log(it)
+
+        var code = String(state_code[state])
+
+        var map_data = d3.json('../All_States/all_counties.json');
+
+        var county_data = d3.dsv(",", '../master_file.csv', function (d) {
+        return {
+            StateFips: convert_state_fips(d.State_ID),
+            CountyFips: convert_county_fips(d.COUNTY_FIPS),
+            CountyPopString: d.County_Population_2010,
+            CountyPop: parseInt(d.County_Population_2010.replace(",", "").replace(",", "")),
+            RuralNum: parseInt(d.RUCC_2013),
+            Description: d.Description,
+            Medicaid: parseFloat(d.ACCEPTS_MED),
+            CHIP: parseFloat(d.ACCEPTS_CHIP),
+            MedCHIP: parseFloat(d.ACCEPTS_MED_CHIP),
+            Private: parseInt(d.ONLY_PRIVATE),
+            NumDentists: parseFloat(d.NUM_DENTISTS),
+            NumGeneral: parseFloat(d.NUM_GENERALIST),
+            NumSpecialist: parseFloat(d.NUM_SPECIALIST),
+            NumPed: parseFloat(d.NUM_PEDIATRITION),
+            NumGeneralMed: parseFloat(d.NUM_MED_GENERALIST),
+            NumSpecialistMed: parseFloat(d.NUM_MED_SPECIALIST),
+            NumPedMed: parseFloat(d.NUM_MED_PEDIATRITION),
+            NumGeneralChip: parseFloat(d.NUM_CHIP_GENERALIST),
+            NumSpecialistChip: parseFloat(d.NUM_CHIP_SPECIALIST),
+            NumPedChip: parseFloat(d.NUM_CHIP_PEDIATRITION),
+            dcai: Math.round(parseFloat(d.PUBLIC_AVAILABILITY_RATIO)*10000)/10000
+        };})
+
+             
+        Promise.all([map_data, state, county_data]).then(function(values){  
+
+            
+            var svg = 
+                d3.select("div#container")
+                .append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 " + w + " " + h)
+                .attr("transform", "translate(0,0)")
+                .classed("svg-content", true);
+
+            // Loading the Data
+            const map_height = parseFloat(svg.style("height").substr(0, 6))
+            var projection = d3.geoMercator().center([projections[code][0],projections[code][1]]).scale(projections[code][2]*(map_height+200)/850).translate([width/3.7, height/2.65])
+            var path = d3.geoPath().projection(projection);
+            var map = values[0].features.filter(function (a) { return a.properties['STATE'] == code; });
+            var county_data = values[2].filter(function(d){return d.StateFips==code})
+
+            // var b = path.bounds(map),
+            //     s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+            //     t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+            // var a = d3.geo.bounds(map)
+            // console.log(a)
+            // // Update the projection to use computed scale & translate.
+            // projection
+            //     .scale(s)
+            //     .translate(t);
+
+
+            // projection = d3.geoMercator().fitSize([1000, 600], map1)
+            // path = d3.geoPath().projection(projection)
+            // console.log(map)
+            // projection = d3.geoMercator().fitSize([10, 600], map)
+            // path = d3.geoPath().projection(projection)
+            // console.log(window.innerHeight)
+
+            // Merging our data into the map data
+            merged = [];
+            for(let i=0; i < map.length; i++) {
+            merged.push({
+                ...map[i],
+                ...(county_data.find((itmInner) => itmInner.CountyFips === map[i].properties.COUNTY)) })}
+            let result = merged.map(a => a['NumDentists']);
+
+
+            // Creating Scales
+            if (total_capita == 'Total'){
+
+                    var min = 1,
+                        max = d3.max(merged, function(d) { return d['NumDentists']} )
+                    
+                    if (stype == 'Linear'){
+                        var colors = d3.scaleSequential([min, max], d3.interpolateReds)
+
+                        var x1 = d3.scaleLinear()
+                        .domain([min,max])         
+                        .range([0, height/3])     
+                    }
+                    else if (stype == 'Log') {
+                        var colors = d3.scaleSequentialLog([min, max], d3.interpolateReds)
+
+                        var x1 = d3.scaleLog()
+                        .domain([min,max])         
+                        .range([0, height/3])       
+                        .base(2)
+                    }
+
+            } else if (total_capita == 'Capita'){
+
+                var min = d3.min(merged, function(d) { return 100000*d['NumDentists']/d.CountyPop} ),
+                    max = d3.max(merged, function(d) { return 100000*d['NumDentists']/d.CountyPop} )
+                    
+                    var colors = d3.scaleSequential([min, max], d3.interpolateReds)
+
+                    var x1 = d3.scaleLinear()
+                    .domain([min,max])         
+                    .range([0, height/3])     
+                    
+
+
+
+            }
+
+            // This is still the scale stuff
+            var defs = svg.append("defs");
+            var linearGradient = defs.append("linearGradient")
+                .attr("id", "linear-gradient");
+
+            linearGradient
+                .attr("x1", "0%")
+                .attr("y1", "0%")
+                .attr("x2", "0%")
+                .attr("y2", "100%");
+
+            for (i = 0; i < 10; i++){
+                var col = d3.interpolateReds(i/10)
+                linearGradient.append("stop")
+                    .attr("offset", i*10 + "%")
+                    .attr("stop-color", col); //light blue
+            }
+
+            svg.append("rect")
+                .attr("width", 20)
+                .attr("height", height/3)
+                .attr("transform", "translate(60," + h/4 + ")") 
+                .style("fill", "url(#linear-gradient)");
+
+            svg.append("text")
+            .attr('id', 'legend_label')
+            .attr("text-anchor", "middle")
+            .attr("y", h/4- 15)
+            .attr("x", 65)
+            .text(function(d){
+                if (total_capita == 'Total'){return 'Total Dentists'}
+                else if (total_capita == 'Capita'){ return 'Dentists Per 100,000'}
+                })
+
+
+
+
+            // Actual Heatmap stuff
+            svg.selectAll("path")
+                .data(merged)
+                .enter()
+                .append("path")
+                .attr("class","continent")
+                .attr("d", path)
+                .style('stroke-width',  '0.8px')
+                .style("stroke", "#fff")
+                .attr("fill", function (d) {
+                    
+                    if (total_capita == 'Total'){
+                        if (it == 'medicaid'){
+                            if (d.Medicaid) {return colors(d.Medicaid)}
+                            return '#E8E8E8'
+                        } else if (it == 'chip'){
+                            if (d.MedCHIP) {return colors(d.MedCHIP)}
+                            return '#E8E8E8'
+                        } else if (it == 'medicaid_chip'){
+                            if (d.NumDentists) {return colors(d.NumDentists)}
+                            return '#E8E8E8'
+                        }
+
+                    } else if (total_capita == 'Capita'){
+                        if (it == 'medicaid'){
+                            if (d.Medicaid) {return colors(100000*d.Medicaid/d.CountyPop)}
+                            return '#E8E8E8'
+                        } else if (it == 'chip'){
+                            if (d.MedCHIP) {return colors(100000*d.MedCHIP/d.CountyPop)}
+                            return '#E8E8E8'
+                        } else if (it == 'medicaid_chip'){
+                            if (d.NumDentists) {return colors(100000*d.NumDentists/d.CountyPop)}
+                            return '#E8E8E8'
+                        }
+
+                    }
+                    
+
+                    })
+                .attr("class", function(d){ return "Country" } )
+                .style("opacity", .8)
+                .on('mouseover', mouseover_county)
+                .on("mousemove", mousemove_county)
+                .on("mouseleave", mouseleave)
+                .on("click", function(d){ window.open('https://www.google.ca/maps/place/' + d.properties.NAME + '+County+' + values[1], '_blank'); })
+
+       
+
+
+
+
+            // Pie Chart
+            pie_data = {
+                General: summing(county_data, 'NumGeneral' + bar_d[it]),
+                Pediatric: summing(county_data, 'NumPed'+ bar_d[it]),
+                Specialty: summing(county_data, 'NumSpecialist'+ bar_d[it]),
+                }
+         
+            // Draw the pie chart
+            draw_pie(pie_data, window.innerHeight, window.innerWidth)
+
+         // Bar Chart Stuff
+            function summing_bar(data, col, min_, max_){ 
+                    return d3.sum(data, function(d) {
+                        if (d['RuralNum'] >= min_ && d['RuralNum'] <= max_){return d[col];
+                        } else {return 0}   })};
+
+            if (total_capita == 'Total'){
+                var rurality_pops = [1,1,1]
+            } else if (total_capita == 'Capita') {
+                var rurality_pops = [summing_bar(county_data, 'CountyPop', 1, 3)/100000, summing_bar(county_data, 'CountyPop', 4, 6)/100000, summing_bar(county_data, 'CountyPop', 7, 9)/100000]
+            }   
+
+            bar_data = [
+                    {'group': 'Urban',  'General': summing_bar(county_data, 'NumGeneral' + bar_d[it], 1, 3)/rurality_pops[0], 'Pediatric': summing_bar(county_data, 'NumPed' + bar_d[it], 1, 3)/rurality_pops[0], 'Specialist': summing_bar(county_data, 'NumSpecialist' + bar_d[it], 1, 3)/rurality_pops[0]},
+                    {'group': 'Suburban',  'General': summing_bar(county_data, 'NumGeneral' + bar_d[it], 4,6)/rurality_pops[1], 'Pediatric': summing_bar(county_data, 'NumPed' + bar_d[it], 4,6)/rurality_pops[1], 'Specialist': summing_bar(county_data, 'NumSpecialist' + bar_d[it], 4,6)/rurality_pops[1]},
+                    {'group': 'Rural',  'General': summing_bar(county_data, 'NumGeneral' + bar_d[it], 7,9)/rurality_pops[2], 'Pediatric': summing_bar(county_data, 'NumPed' + bar_d[it], 7,9)/rurality_pops[2], 'Specialist': summing_bar(county_data, 'NumSpecialist' + bar_d[it], 7,9)/rurality_pops[2]}
+                ]     
+
+            draw_barplot(bar_data, window.innerHeight, window.innerWidth)
+
+            // Append Axis
+            svg
+            .append("g")
+            .attr("transform", "translate(60," + h/4 + ")") 
+            .call(d3.axisLeft(x1));
+
+
+            // The other text stuff ...
+            svg_text_d1 = {
+                'medicaid': [ Math.round(summing(merged, 'Medicaid'), 2), Math.round(100*(summing(merged, 'Medicaid')/summing(merged, 'NumDentists')), 3) + '%'],
+                'chip': [ Math.round(summing(merged, 'CHIP'), 2), Math.round(100*(summing(merged, 'CHIP')/summing(merged, 'NumDentists')), 3) + '%'],
+                'medicaid_chip': [ Math.round(summing(merged, 'MedCHIP'), 2), Math.round(100*(summing(merged, 'MedCHIP')/summing(merged, 'NumDentists')), 3) + '%']
+            }
+
+            svg_text1 = 
+                d3.select("div#text1")
+                .html(
+                    '<span style="line-height:150%"><u>Properties</u></span></p><br>' +
+                    'Name: </p><br>' + 
+                    'Population : </p><br>' +
+                    '# of Dentists that Accept ' + svg_text_d[it] + ': </p><br>' +
+                    '% of Dentists that Accept ' + svg_text_d[it] + ': </p><br>' + 
+                    'Dental Care Availability Index (DCAI): </p><br>'
+                    )
+
+            
+            svg_text2 = d3.select("div#text2").html('<span style="line-height:150%"><u>Counties</u></span>')
+
+            svg_text3 = 
+                d3.select("div#text3")
+                .html(
+                    '<span style="line-height:150%"><u>State</u></span>' + '</p><br>' +
+                    selected  + '</p><br>' +
+                    numberWithCommas(summing(merged, 'CountyPop')) +  '</p><br>' +
+                    svg_text_d1[it][0] + '</p><br>' +
+                    svg_text_d1[it][1] + '</p><br>' + 
+                    median(merged.map( function(d){return d.dcai;})) + '</p><br>'
+                    )
+                                
+
+            });
+
+    }
+    
+    draw_map(selected)
+
+    // Update function and when options change
+    function update(selectedGroup){
+        d3.select('svg').remove()
+        d3.select('#bar').select('svg').remove()
+        d3.select('#pie').select('svg').remove()
+        draw_map(selectedGroup)
+    }
+
+    d3.select('#input_radio').selectAll("input").on("change", function(){
+                stype = this.value
+                update(selected)
+            });
+
+    d3.select('#options').selectAll("input").on("change", function() {
+                total_capita = this.value
+                update(selected)
+            });
+
+    d3.select('#county').selectAll("input").on("change", function() {
+                level = this.value
+                update(selected)
+            });
+
+    window.addEventListener("resize", function(){
+                d3.select('#pie').select('svg').remove()
+                draw_pie(pie_data, window.innerHeight, window.innerWidth)      
+                d3.select('#bar').select('svg').remove()
+                draw_barplot(bar_data, window.innerHeight, window.innerWidth)    
+            }, true);
+
+    $('document').ready(function () {
+
+            $("#selectButton").select2()
+            .on("select2:select", function (e) {
+              selected = this.value;
+              update(selected)
+            });
+
+            $("#insurance_dropdown").select2()
+            .on("select2:select", function (e) {
+              it = this.value
+              update(selected)
+            });
+    });  
+
+
+    </script>
+
+    <div class = 'footer'>
+        <button class="btn" onclick= "window.location.href='../county_summary.csv'"><i class="fa fa-download"></i> Download CSV</button>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>State map</title>
+
+    <div class = 'header'>
+        <h1 style = 'font-size: 40px'>State Maps</h1>
+        <select id="selectButton"></select>
+    </div>
+    <br>
+
+    <div id="container" class="svg-container"></div>
+
+    <style>
+
+        .header{
+            text-align: center;
+            width: 700px;
+            font-family: 'Arial';
+        }
+        .tooltip {
+            background-color: black;
+            line-height: 0px;
+            border: "solid";
+            border-width: 2px;
+            font-family: 'Arial';
+            font-size: 16px;
+            border-color: white;
+            border: 2px;
+            text-align: left; 
+            color: white;
+        }
+
+        #selectButton{
+            width: 300px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+    
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.js"></script>
+    <!-- <script src="../lib/topojson.v1.min"></script> -->
+    <!-- <script src="../lib/topojson.v1.min"></script> -->
+    <!-- <script src="../lib/simple-statistics.min"></script> -->
+    <!-- <script src="../lib/queue.v1.min"></script> -->
+    <!-- <script src="../lib/d3-ease.v1.min"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>         
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    
+    <script type="text/javascript">
+    
+    var state_code = {'Alabama': '01','Alaska': '02','Arizona': '04','Arkansas': '05','California': '06','Colorado': '08','Connecticut': '09','Delaware': '10','Florida': '12',
+                    'Georgia': '13','Hawaii': '15','Idaho': '16','Illinois': '17','Indiana': '18','Iowa': '19','Kansas': '20','Kentucky': 21,'Louisiana': 22, 'Maine': 23,'Maryland': 24,
+                    'Massachusetts': 25,'Michigan': 26,'Minnesota': 27,'Mississippi': 28,'Missouri':29,'Montana': 30,'Nebraska': 31,'Nevada': 32,'New Hampshire': 33,
+                    'New Jersey': 34,'New Mexico': 35,'New York': 36,'North Carolina': 37,'North Dakota': 38,'Ohio': 39,'Oklahoma': 40,'Oregon': 41,'Pennsylvania': 42,
+                    'Rhode Island': 44,'South Carolina': 45,'South Dakota': 46,'Tennessee': 47,'Texas': 48,'Utah': 49,'Vermont': 50,'Virginia': 51,'Washington': 53,
+                    'West Virginia': 54,'Wisconsin': 55,'Wyoming': 56,'American Samoa': 60,'Guam': 66,'Northern Mariana Islands': 69,'Puerto Rico': 72}
+    
+    state_names = Object.keys(state_code);
+    
+
+    projections = { '13' : {'projection' : d3.geoMercator().rotate([92.5,0]).center([1.5,34]).scale(7000), 'translate' :  [-100,250]},
+                    '01' : {'projection' : d3.geoMercator().rotate([92.5,0]).center([5,33.7]).scale(6000),'translate' :  [-100,175]},
+                    '04' : {'projection' : d3.geoMercator().rotate([111.9166666666667,0]).center([0,36]).scale(6000),'translate' :  [-100,200]},
+                    '05' : {'projection' : d3.geoMercator().rotate([92,0]).center([-2.5,36]).scale(9000), 'translate' :  [-150,2700]},
+                    '06' : {'projection' : d3.geoMercator().rotate([122,0]).center([-2,40]).scale(4000),'translate' :  [-200,1585]},
+                    '08' : {'projection' : d3.geoMercator().center([0,0]).scale(100),'translate' :  [-200,1585]},
+                    '09' : {'projection' : d3.geoMercator().rotate([72.75,0]).scale(10900),'translate' :  [-200,8600]},
+                    '08' : {'projection' : d3.geoMercator().rotate([72.75,0]).scale(10900),'translate' :  [-200,8600]},
+                    '10' : {'projection' : d3.geoMercator().rotate([75.4166667,0]).center([0,38]).scale(14500),'translate' :  [-100,300]},
+                    '12' : {'projection' : d3.geoMercator().rotate([81,0]).center([0,24.333]).scale(3300),'translate' :  [-70,230]},
+                    '15' : {'projection' : d3.geoMercator().rotate([155.5,0]).center([0,18.8333]).scale(5000),'translate' :  [0,150]},
+                    '19' : {'projection' : d3.geoMercator().rotate([93.5,0]).scale(5000),'translate' :  [-200,4000]},
+                    '17' : {'projection' : d3.geoMercator().rotate([88.333,0]).center([0,36.66]).scale(4000),'translate' :  [0,230]},
+                    '18' : {'projection' : d3.geoMercator().rotate([85.667,0]).center([0,37.5]).scale(5500),'translate' :  [0,230]},
+                    '20' : {'projection' : d3.geoMercator().rotate([98,0]).scale(5000),'translate' :  [-100,3650]},
+                    '21' : {'projection' : d3.geoMercator().rotate([84.25,0]).scale(5000),'translate' :  [-35,3550]},
+                    '22' : {'projection' : d3.geoMercator().rotate([92.5,0]).scale(4800), 'translate' :  [-125,2750]},
+                    '25' : {'projection' : d3.geoMercator().rotate([71.5,0]).scale(10000), 'translate' :  [-125,8000]},
+                    '24' : {'projection' : d3.geoMercator().rotate([77,0]).scale(8500),'translate' :  [-125,6200]},
+                    '23' : {'projection' : d3.geoMercator().rotate([68.5,0]).center([0,43.6667]).scale(5200),'translate' :  [0,170]},
+                    '26' : {'projection' : d3.geoMercator().rotate([84.366,0]).scale(3400),'translate' :  [-25,2940]},
+                    '27' : {'projection' : d3.geoMercator().rotate([94.25,0]).center([-0.5,48.2]).scale(7000),'translate' :  [-125,3340]},
+                    '29' : {'projection' : d3.geoMercator().rotate([92.5,0]).center([0,35.83333]).scale(4500),'translate' :  [-100,230]},
+                    '28' : {'projection' : d3.geoMercator().rotate([88.8333,0]).center([0,29.5]).scale(4500),'translate' :  [-100,265]},
+                    '30' : {'projection' : d3.geoMercator().rotate([109.5,0]).scale(3700),'translate' :  [-125,3390]},
+                    '37' : {'projection' : d3.geoMercator().rotate([79,0]).scale(4500),'translate' :  [-105,2975]},
+                    '38' : {'projection' : d3.geoMercator().rotate([100.5,0]).scale(5000),'translate' :  [-105,4650]},
+                    '31' : {'projection' : d3.geoMercator().rotate([100.0,0]).scale(5000),'translate' :  [-135,3950]},
+                    '33' : {'projection' : d3.geoMercator().rotate([71.6667,0]).center([0,42.5]).scale(8500), 'translate' :  [-100,235]},
+                    '34' : {'projection' : d3.geoMercator().rotate([74.5,0]).center([0,38.83333]).scale(9500),'translate' :  [-100,235]},
+                    '35' : {'projection' : d3.geoMercator().rotate([106.25,0]).center([0,31]).scale(3500),'translate' :  [-100,215]},
+                    '32' : {'projection' : d3.geoMercator().rotate([116.66667,0]).center([0,34.75]).scale(3000),'translate' :  [-100,215]},
+                    '36' : {'projection' : d3.geoMercator().rotate([76.58333,0]).center([0,40]).scale(5000),'translate' :  [-150,255]},
+                    '39' : {'projection' : d3.geoMercator().rotate([82.5,0]).scale(6000),'translate' :  [-135,4580]},
+                    '40' : {'projection' : d3.geoMercator().rotate([98,0]).scale(5000),'translate' :  [-95,3320]},
+                    '41' : {'projection' : d3.geoMercator().rotate([120.5,0]).scale(4800),'translate' :  [-95,4100]},
+                    '42' : {'projection' : d3.geoMercator().rotate([77.75,0]).scale(6800),'translate' :  [-125,5300]},
+                    '44' : {'projection' : d3.geoMercator().rotate([71.5,0]).center([0,41.083333]).scale(25000),'translate' :  [-150,245]},
+                    '45' : {'projection' : d3.geoMercator().rotate([81,0]).scale(6800),'translate' :  [-125,4250]},
+                    '46' : {'projection' : d3.geoMercator().rotate([100,0]).scale(4800),'translate' :  [-125,4100]},
+                    '47' : {'projection' : d3.geoMercator().rotate([86,0]).scale(4800),'translate' :  [-125,3200]},
+                    '48' : {'projection' : d3.geoMercator().rotate([98.5,0]).scale(2100),'translate' :  [-125,1235]},
+                    '49' : {'projection' : d3.geoMercator().rotate([111.5,0]).scale(4100),'translate' :  [-125,3075]},
+                    '51' : {'projection' : d3.geoMercator().rotate([78.5,0]).scale(5000),'translate' :  [-75,3575]},
+                    '50' : {'projection' : d3.geoMercator().rotate([72.5,0]).center([0,42.5]).scale(9000),'translate' :  [-150,245]},
+                    '53' : {'projection' : d3.geoMercator().rotate([120.83333,0]).scale(6000),'translate' :  [-155,5555]},
+                    '55' : {'projection' : d3.geoMercator().rotate([90,0]).scale(5000),'translate' :  [-155,4325]},
+                    '54' : {'projection' : d3.geoMercator().rotate([79.5,0]).scale(6500),'translate' :  [-105,4795]},
+                    '56' : {'projection' : d3.geoMercator().rotate([107.333,0]).center([0,40.5]).scale(5000), 'translate' :  [-150,245]},
+                    '02' : {'projection' : d3.geoMercator().rotate([154,0]).center([-10, 67]).scale(1000),'translate' :  [-105,25]} 
+    }
+
+    var w = 1800;
+    var h = 1200;
+
+    var Tooltip = d3.select("div#container").append("div").style("opacity", 0).attr("class", "tooltip");
+
+    d3.select("#selectButton")
+        .selectAll('myOptions')
+        .data(state_names)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) 
+        .attr("value", function (d) { return d; });
+
+
+
+
+
+
+    function mousemove(d){
+
+        var d = d.properties
+        Tooltip
+            .html('<strong><p>County Name: </strong>' + d.NAME + '</p><br>' + 
+            '<strong><p>County FIPS: </strong>' + d.COUNTYFP + '</p><br>'
+            )
+            .style("left", d3.event.pageX + 10 + 'px')
+            .style("top",  d3.event.pageY + 10 + 'px')
+            .style('padding', 10 + 'px ' + 10 + 'px ' + 10 + 'px ' + 10 + 'px ')
+            .style('border-radius', 4 + 'px')
+            .style('position', 'absolute')
+            .style("opacity", 0.8);
+
+        }
+
+    function mouseleave(d) {
+        Tooltip.style('opacity', '0')
+        }
+
+   
+
+
+
+
+
+
+
+
+
+
+
+    function draw_map(state){
+
+        var code = String(state_code[state])
+        var map_data = d3.json('../All_States/' + code +'_counties.json');
+        if (code == '08'){
+            map_data = d3.json('../All_States/complete_simp.json');};
+
+
+        Promise.all([map_data, state]).then(function(values){  
+
+            var projection = projections[code]['projection']
+            var path = d3.geoPath().projection(projection);
+
+            var county_data = values[0]
+            var state = values[1].toLowerCase().replace(" ", "_")
+            
+            var map
+            // if (code == '08'){
+            //     map = values[0].features
+            //     // console.log()
+            //     // map = topojson.feature(values[0], values[0].objects['counties']).features
+            //     projection = d3.geoMercator().center([-150,50]).scale(1000)
+            //     // projection = d3.geoMercator().center([0,0]).scale(10)
+            //     path = d3.geoPath().projection(projection);
+
+            //     // filtered = map.filter(function (a) { 
+            //     //     // console.log(a.properties['STATE'])
+            //     //     return a.properties['STATE'] == '27'; });
+            //     // console.log(filtered)
+            //     // map = filtered
+
+            // } else{
+                console.log(county_data)
+                map = topojson.feature(county_data, county_data.objects['cb_2015_' + state + '_county_20m']).features
+            // }
+            console.log(map)
+
+            var svg = 
+                d3.select("div#container")
+                .append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 " + w + " " + h)
+                .classed("svg-content", true);
+
+
+            svg.selectAll("path")
+                .data(map)
+                .enter()
+                .append("path")
+                .attr("class","continent")
+                .attr("d", path)
+                .style('stroke-width',  '0.3px')
+                .style("stroke", "#fff")
+                .attr('fill', 'red')
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave);
+
+            });
+
+    }
+
+
+
+    
+    function update(selectedGroup){
+        draw_map(selectedGroup)
+        d3.select('svg').remove()
+    }
+
+
+
+
+
+
+    draw_map('Alabama')
+
+
+
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButton").on("change", function(d) {
+    // recover the option that has been chosen
+    var selectedOption = d3.select(this).property("value")
+    // run the updateChart function with this selected option
+    update(selectedOption)  
+    })
+
+    $(document).ready(function () {
+            $("select").select2()
+            .on("select2:select", function (e) {
+              var selected = e.params.data.text;
+              //var selectedOption = d3.select(this).property("value")
+              update(selected)
+            });
+    });  
+
+    </script>
+
+
+</body>
+</html>
