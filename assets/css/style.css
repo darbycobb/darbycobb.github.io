@@ -627,6 +627,7 @@ section {
 /*--------------------------------------------------------------
 # About
 --------------------------------------------------------------*/
+
 .about .content h3 {
   font-weight: 700;
   font-size: 26px;
@@ -655,6 +656,11 @@ section {
 /*--------------------------------------------------------------
 # Skills
 --------------------------------------------------------------*/
+#skills {
+  background-color: #f0f5fd;
+  border-top-color: #c9daf5;
+  border-bottom-color: #c9daf5;
+}
 .skills .progress {
   height: 50px;
   display: block;
@@ -845,6 +851,12 @@ section {
 /*--------------------------------------------------------------
 # projects
 --------------------------------------------------------------*/
+#projects {
+  background-color: #f0f5fd;
+  border-top-color: #c9daf5;
+  border-bottom-color: #c9daf5;
+}
+
 .projects .icon-box {
   text-align: center;
   padding: 70px 20px 80px 20px;
